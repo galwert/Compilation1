@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/compilation.dir/main.cpp.o  -o compilation 
