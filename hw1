@@ -1,66 +1,61 @@
-%{
-	
-	#include <stdio.h>
-	void {printToken(char *);
-	#ifndef TOKENS_HPP_ 
-	#define TOKENS_HPP_ 
-	enum tokentype {
-	 VOID = 1, INT = 2, BYTE = 3, B = 4, BOOL = 5, AND = 6, OR = 7, NOT = 8, TRUE = 9, FALSE = 10, RETURN = 11, IF = 12, ELSE = 13, WHILE = 14, BREAK = 15, CONTINUE = 16, SC = 17, COMMA = 18, LPAREN = 19, RPAREN = 20, LBRACE = 21, RBRACE = 22, ASSIGN = 23, RELOP = 24, BINOP = 25, COMMENT = 26, ID = 27, NUM = 28, STRING = 29 };
-	  extern int yylineno; extern char* yytext; extern int yyleng; extern int yylex();
-	 #endif /* TOKENS_HPP_ */
-	 void {printToken(tokentype);}
-%}
 
+%{
+#include <stdio.h>
+void printToken(char * name);
+    void parseString();
+%}
 
 %option yylineno
 %option noyywrap
 digit [0-9]
-letter [a-zA-Z]
-whitespace [\t ]
+letter [A-Za-z]
+whitespace [\t \n]
 relativeoperator [<>=!]=?
-comment \\\\[.]*\n
-binaryoperator [*+\\-]
-id [letter][digit|letter]*
-number [digit]+
-string \"[.\n]\"
+comment \/\/.*\n
+binaryoperator [\*\+\\\-]
+id [A-Za-z][A-Za-z0-9]*
+number [0-9]+
+string \".*\"
 
 %%
-void {printToken(VOID);} 
-int {printToken(INT);}
-byte {printToken(BYTE);} 
-b {printToken(B);}
-bool {printToken(BOOL);}
-and {printToken(AND);}
-or {printToken(OR);}
-not {printToken(NOT);}
-true {printToken(TRUE);}
-false {printToken(FALSE)};
-return {printToken(RETURN);}
-if {printToken(IF);}
-else {printToken(ELSE);}
- while {printToken(WHILE);}
-break {printToken(BREAK);} 
-continue {printToken(CONTINUE);}
-; {printToken(SC);} 
-, {printToken(COMMA);}
-\( {printToken(LPAREN});}
-\) {printToken(RPAREN});}
-\{ {printToken(LBRACE);}
-\} {printToken(RBRACE);}
-= {printToken(ASSIGN);}
-relativeoperator {printToken(RELOP);}
-binaryoperator {printToken(BINOP); }
-comment {printToken(COMMENT);} 
-id {printToken(ID);}
-number {printToken(NUMBER);}
-string {printToken(STRING);}
+
+
+void {char name[10]="VOID";printToken(name);}
+int {char name[10]="INT";printToken(name);}
+byte {char name[10]="BYTE";printToken(name);}
+b {char name[10]="B";printToken(name);}
+bool {char name[10]="BOOL";printToken(name);}
+and {char name[10]="AND";printToken(name);}
+or {char name[10]="OR";printToken(name);}
+not {char name[10]="NOT";printToken(name);}
+true {char name[10]="TRUE";printToken(name);}
+false {char name[10]="FALSE";printToken(name);}
+return {char name[10]="RETURN";printToken(name);}
+if {char name[10]="IF";printToken(name);}
+else {char name[10]="ELSE";printToken(name);}
+ while {char name[10]="WHILE";printToken(name);}
+break {char name[10]="BREAK";printToken(name);}
+continue {char name[10]="CONTINUE";printToken(name);}
+; {char name[10]="SC";   printToken(name);}
+, {char name[10]="COMMA";printToken(name);}
+\( {char name[10]="LPAREN";printToken(name);}
+\) {char name[10]="RPAREN";printToken(name);}
+\{ {char name[10]="LBRACE";printToken(name);}
+\} {char name[10]="RBRACE";printToken(name);}
+= {char name[10]="ASSIGN";printToken(name);}
+{relativeoperator} {char name[10]="RELOP";printToken(name);}
+{binaryoperator} {char name[10]="BINOP"; printToken(name);}
+{comment} {char name[10]="COMMENT";printf("%d %s %s\n", yylineno-1, name, "//");}
+{id} {char name[10]="ID";printToken(name);}
+{number} {char name[10]="NUM";printToken(name);}
+{string} {char name[10]="STRING";parseString();}
+
+{whitespace} {;}
 . {;}
 
-
-
 %%
 
-printToken(tokentype name)
+void printToken(char * name)
 {
-	printf("%d %s %s\n", yylineno, name, yytext);
+    printf("%d %s %s\n", yylineno, name, yytext);
 }
