@@ -15,12 +15,15 @@
 3 BINOP *
 3 ID x
 3 SC ;
-4 ID print
-4 LPAREN (
-4 ID x
-4 RPAREN )
-4 SC ;
-5 RETURN return
-5 NUM 0
-5 SC ;
-6 RBRACE }
+4 STRING hello
+5 STRING hello
+6 STRING 
+7 ID print
+7 LPAREN (
+7 ID x
+7 RPAREN )
+7 SC ;
+8 RETURN return
+8 NUM 0
+8 SC ;
+9 RBRACE }

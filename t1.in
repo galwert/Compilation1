@@ -1,6 +1,9 @@
 int main() {
 	int x = 5;
 	int powerOfx = x * x;
+	"hello"
+	"hello
+	"
 	print(x);
 	return 0;
 }

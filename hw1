@@ -1,8 +1,11 @@
 
 %{
 #include <stdio.h>
+#include <string.h>
+#include "tokens.hpp"
 void printToken(char * name);
-    void parseString();
+void parseString();
+void printError(char * name);
 %}
 
 %option yylineno
@@ -15,8 +18,8 @@ comment \/\/.*\n
 binaryoperator [\*\+\\\-]
 id [A-Za-z][A-Za-z0-9]*
 number [0-9]+
+%x QUOTES
 string \".*\"
-
 %%
 
 
@@ -33,7 +36,7 @@ false {char name[10]="FALSE";printToken(name);}
 return {char name[10]="RETURN";printToken(name);}
 if {char name[10]="IF";printToken(name);}
 else {char name[10]="ELSE";printToken(name);}
- while {char name[10]="WHILE";printToken(name);}
+while {char name[10]="WHILE";printToken(name);}
 break {char name[10]="BREAK";printToken(name);}
 continue {char name[10]="CONTINUE";printToken(name);}
 ; {char name[10]="SC";   printToken(name);}
@@ -45,17 +48,32 @@ continue {char name[10]="CONTINUE";printToken(name);}
 = {char name[10]="ASSIGN";printToken(name);}
 {relativeoperator} {char name[10]="RELOP";printToken(name);}
 {binaryoperator} {char name[10]="BINOP"; printToken(name);}
-{comment} {char name[10]="COMMENT";printf("%d %s %s\n", yylineno-1, name, "//");}
+{comment} {char name[10]="COMMENT";printToken(name);}
 {id} {char name[10]="ID";printToken(name);}
 {number} {char name[10]="NUM";printToken(name);}
-{string} {char name[10]="STRING";parseString();}
+
+\"  BEGIN(QUOTES);
+<QUOTES>[ !#-~]* {yytext--;char name[10]="STRING";parseString();}
+<QUOTES>\" BEGIN(INITIAL);
+<QUOTES>[^\"]* {printf("Error unclosed string\n"); exit(0);}
 
 {whitespace} {;}
-. {;}
+
+
+. {printf("Error %s\n",yytext);}
 
 %%
 
 void printToken(char * name)
 {
-    printf("%d %s %s\n", yylineno, name, yytext);
+    if(strcmp("COMMENT",name) == 0)
+        printf("%d %s %s\n", yylineno-1, name, "//");
+    else
+        printf("%d %s %s\n", yylineno, name, yytext);
+}
+
+void printError(char * name)
+{
+    printf("%s %s\n","Error",name);
+    exit(0);   
 }

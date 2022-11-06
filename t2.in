@@ -2,6 +2,7 @@
 
 int main() {
 	print("Hello world!");
-	print("Nice,\nisn't\nit?");
+	print(" Nice,\nisn't\ni
+	t?");
 	return 0;
 }
