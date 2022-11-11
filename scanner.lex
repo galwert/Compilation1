@@ -4,21 +4,27 @@
 #include <string.h>
 #include "tokens.hpp"
 void printToken(char * name);
-void parseString();
+void parseString(char* str,int len);
 void printError(char * name);
+void addtostring(char* name);
+void clearstring();
+char string[1025];
+int i = 0;
+bool isstring = false;
 %}
 
 %option yylineno
 %option noyywrap
 digit [0-9]
 letter [A-Za-z]
-whitespace [\t \n]
+whitespace [\t \n\r]
 relativeoperator [<>=!]=?
-comment \/\/.*\n
-binaryoperator [\*\+\\\-]
+comment \/\/[^\n\r]*
+binaryoperator [\*\+\/\-]
 id [A-Za-z][A-Za-z0-9]*
-number [0-9]+
+number (0|([1-9][0-9]*))
 %x QUOTES
+%x QUOTESESCAPE
 string \".*\"
 %%
 
@@ -52,29 +58,42 @@ continue {char name[10]="CONTINUE";printToken(name);}
 {id} {char name[10]="ID";printToken(name);}
 {number} {char name[10]="NUM";printToken(name);}
 
-\"  BEGIN(QUOTES);
-<QUOTES>[ !#-~]* {char name[10]="STRING";parseString();}
-<QUOTES>\" BEGIN(INITIAL);
-<QUOTES>. {printf("Error unclosed string\n");}
-{string} {char name[10]="STRING";parseString();}
+\"  BEGIN(QUOTES);isstring = true;
+<QUOTES>[\\] {BEGIN(QUOTESESCAPE),addtostring(yytext);}
+<QUOTESESCAPE>. {BEGIN(QUOTES);addtostring(yytext);}
+<QUOTESESCAPE>[\n\r] {char name[30]="unclosed string";printError(name);}
+<QUOTES>[\"] {BEGIN(INITIAL);parseString(string,i);clearstring(); isstring = false;}
+<QUOTES>. {addtostring(yytext);}
+<QUOTES>[\n\r] {char name[30]="unclosed string";printError(name);}
+
+<<EOF>> {if(isstring) {char name[30]="unclosed string";printError(name);}; return 0;}
 
 {whitespace} {;}
-
-
-. {printf("Error %s\n",yytext);}
+. {printError(yytext);}
 
 %%
+void addtostring(char *name)
+{
+    string[i] = name[0];
+    string[i+1] = name['\0'];
+    i++;
+}
+
+void clearstring()
+{
+    i = 0;
+}
 
 void printToken(char * name)
 {
     if(strcmp("COMMENT",name) == 0)
-        printf("%d %s %s\n", yylineno-1, name, "//");
+        printf("%d %s %s\n", yylineno, name, "//");
     else
         printf("%d %s %s\n", yylineno, name, yytext);
 }
 
 void printError(char * name)
 {
-    printf("%s %s\n","Error",name);
+    printf("Error %s\n",name);
     exit(0);   
 }

@@ -11,7 +11,7 @@ extern int yyleng;
 extern int yylex();
 using namespace std;
 
-map<char,int> m = {{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',6},{'7',7},{'8',8},{'9',9},{'A',10},{'B',11},{'C',12},{'D',13},{'E',14},{'F',15}};
+map<char,int> m = {{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',6},{'7',7},{'8',8},{'9',9},{'A',10},{'B',11},{'C',12},{'D',13},{'E',14},{'F',15},{'a',10},{'b',11},{'c',13},{'e',14},{'f',15}};
 
 int main(){
     int token;
@@ -23,20 +23,18 @@ int main(){
     return 0;
 }
 
-void parseString()
+void parseString(char* str,int len)
 {
-    string s = yytext;
+    string s = str;
     string res = "";
-    int n = yyleng;
+    int n = len;
 
     for(int i=0;i<n;i++)
     {
-        if(s[i] == '\"') // For first and last "
-            continue;
         if(s[i] == '\\') // For escape sequences
         {
             i++;
-            if(i >= n-1) // String is not long enough
+            if(i >= n) // String is not long enough
             {
                 cout << "Error unclosed string" << endl;
                 exit(0);
@@ -44,28 +42,32 @@ void parseString()
             switch (s[i])
             {
                 case 'n': // \n case
-                    res += 0x0a;
+                    res += '\n';
                     break;
                 case 'r': // \r case
-                    res += 0x0d;
+                    res += '\r';
                     break;
                 case 't': // \t case
-                    res += 0x09;
+                    res += '\t';
                     break;
                 case '\\': // \\ case
-                    res += 0x5c;
+                    res += '\\';
                     break;
                 case '"': // \" case
-                    res += 0x22;
+                    res += '\"';
+                    break;
+                case '0': // \0 case
+                    cout << to_string(yylineno) + " STRING " + res << endl;
+                    return;
                     break;
                 case 'x': // \xdd case
                 {
-                    if(i+1 >= n-1) // \xdd at the end but the string is not long enough
+                    if(i+1 >= n) // \xdd at the end but the string is not long enough
                     {
-                        cout << "Error unclosed string" << endl;
+                        cout << "Error undefined escape sequence x" << endl;
                         exit(0);
                     }
-                    else if(i+2 >= n-1)
+                    else if(i+2 >= n)
                     {
                         string error{'x',s[i+1]};
                         cout << "Error undefined escape sequence " + error << endl;
@@ -78,8 +80,19 @@ void parseString()
                         exit(0);
                     }
                     int num = (m[s[i+1]])*16 + m[s[i+2]];
+                    if(num < 0 || num >127) // if the hex value is not valid
+                    {
+                        string error{'x',s[i+1],s[i+2]};
+                        cout << "Error undefined escape sequence " << error << endl;
+                        exit(0);
+                    }
+                    if(num == 0) // if the hex is 0 (\0)
+                    {
+                        cout << to_string(yylineno) + " STRING " + res << endl;
+                        return;
+                    }
                     i+=2;
-                    res += (char)num;
+                    res += num;
                     break;
                 }
                 default: // Escape sequences error
@@ -96,62 +109,3 @@ void parseString()
     }
     cout << to_string(yylineno) + " STRING " + res << endl;
 }
-
-/*
-void parseString()
-{
-    char* curr= yytext;
-    printf("%d %s ", yylineno, "STRING");
-    curr++;
-    while(*curr!='\0')
-    {
-        if(*curr=='\"')
-        {
-            curr++;
-            continue;
-        }
-        if(*curr=='\\')
-        {
-            int sum;
-            curr++;
-            switch (*curr) {
-                case 'n':
-                    putchar('\n');
-                    break;
-                case '\"':
-                    putchar('\"');
-                    break;
-                case 't':
-                    putchar('\t');
-                    break;
-                case 'r':
-                    putchar('\r');
-                    break;
-                case '0':
-                    curr++;
-                    if(*curr==' ') //not sure what to do with \0
-                    {
-
-                    }
-                case 'x':
-                        curr++;
-                        char tmp [3];
-                        tmp[0]=*curr; // now we are in the first digit of /xdd
-                        tmp[1]=*(curr+1);
-                        tmp[2]='\0';
-                        int sum=std::stoi(tmp,nullptr,16);
-                    putchar(sum);
-                    break;
-                    //should check for error if the number is bigger than 127
-            }
-
-        }
-        else
-        {
-            printf("%c",*curr);
-        }
-        curr++;
-    }
-    printf("\n");
-}
-*/
