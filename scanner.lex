@@ -2,7 +2,6 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "tokens.hpp"
 void printToken(char * name);
 void parseString(char* str,int len);
 void printError(char * name);

@@ -11,7 +11,7 @@ extern int yyleng;
 extern int yylex();
 using namespace std;
 
-map<char,int> m = {{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',6},{'7',7},{'8',8},{'9',9},{'A',10},{'B',11},{'C',12},{'D',13},{'E',14},{'F',15},{'a',10},{'b',11},{'c',13},{'e',14},{'f',15}};
+map<char,int> m = {{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',6},{'7',7},{'8',8},{'9',9},{'A',10},{'B',11},{'C',12},{'D',13},{'E',14},{'F',15},{'a',10},{'b',11},{'c',12},{'d',13},{'e',14},{'f',15}};
 
 int main(){
     int token;
@@ -28,7 +28,7 @@ void parseString(char* str,int len)
     string s = str;
     string res = "";
     int n = len;
-
+    bool is_finished=false;
     for(int i=0;i<n;i++)
     {
         if(s[i] == '\\') // For escape sequences
@@ -42,23 +42,33 @@ void parseString(char* str,int len)
             switch (s[i])
             {
                 case 'n': // \n case
-                    res += '\n';
+                    if(is_finished==false) {
+                        res += '\n';
+                    }
                     break;
                 case 'r': // \r case
-                    res += '\r';
+                    if(is_finished==false) {
+                        res += '\r';
+                    }
                     break;
                 case 't': // \t case
-                    res += '\t';
+                    if(is_finished==false) {
+                        res += '\t';
+                    }
                     break;
                 case '\\': // \\ case
-                    res += '\\';
+                    if(is_finished==false) {
+                        res += '\\';
+                    }
                     break;
                 case '"': // \" case
-                    res += '\"';
+                    if(is_finished==false) {
+                        res += '\"';
+                    }
                     break;
                 case '0': // \0 case
-                    cout << to_string(yylineno) + " STRING " + res << endl;
-                    return;
+                    //cout << to_string(yylineno) + " STRING " + res << endl;
+                    is_finished=true;
                     break;
                 case 'x': // \xdd case
                 {
@@ -88,11 +98,14 @@ void parseString(char* str,int len)
                     }
                     if(num == 0) // if the hex is 0 (\0)
                     {
-                        cout << to_string(yylineno) + " STRING " + res << endl;
-                        return;
+                        //cout << to_string(yylineno) + " STRING " + res << endl;
+                        is_finished=true;
                     }
                     i+=2;
-                    res += num;
+                    if(is_finished==false)
+                    {
+                        res += num;
+                    }
                     break;
                 }
                 default: // Escape sequences error
@@ -104,8 +117,11 @@ void parseString(char* str,int len)
                 }
             }
         }
-        else
-            res += s[i];
+        else {
+            if (is_finished==false) {
+                res += s[i];
+            }
+        }
     }
     cout << to_string(yylineno) + " STRING " + res << endl;
 }
